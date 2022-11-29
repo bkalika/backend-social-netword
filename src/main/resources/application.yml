@@ -2,3 +2,11 @@ security.jwt.token.secret-key: my-secret-key
 auth:
   cookie:
     hmac-key:secret-key: my-secret
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            clientId: **
+            clientSecret: **
