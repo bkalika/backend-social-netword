@@ -1,9 +1,14 @@
 package com.bkalika.socialnetwork.controllers;
 
+import com.bkalika.socialnetwork.config.CookieAuthenticationFilter;
 import com.bkalika.socialnetwork.config.UserAuthenticationProvider;
 import com.bkalika.socialnetwork.dto.SignUpDto;
 import com.bkalika.socialnetwork.dto.UserDto;
+import com.bkalika.socialnetwork.services.AuthenticationService;
 import com.bkalika.socialnetwork.services.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,6 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * @author @bkalika
@@ -24,16 +33,32 @@ public class AuthenticationController {
 
     private final UserService userService;
     private final UserAuthenticationProvider userAuthenticationProvider;
+    private final AuthenticationService authenticationService;
 
-    public AuthenticationController(UserService userService, UserAuthenticationProvider userAuthenticationProvider) {
+    public AuthenticationController(UserService userService,
+                                    UserAuthenticationProvider userAuthenticationProvider,
+                                    AuthenticationService authenticationService) {
         this.userService = userService;
         this.userAuthenticationProvider = userAuthenticationProvider;
+        this.authenticationService = authenticationService;
     }
 
     @PostMapping("/signIn")
-    public ResponseEntity<UserDto> signIn(@AuthenticationPrincipal UserDto user) {
-        user.setToken(userAuthenticationProvider.createToken(user.getLogin()));
-        return ResponseEntity.ok(user);
+    public ResponseEntity<UserDto> signIn(@AuthenticationPrincipal UserDto userDto,
+                                          HttpServletResponse response) {
+        userDto.setToken(userAuthenticationProvider.createToken(userDto.getLogin()));
+
+        Cookie cookie = new Cookie(CookieAuthenticationFilter.COOKIE_NAME,
+                authenticationService.createToken(userDto));
+
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setMaxAge((int) Duration.of(1, ChronoUnit.DAYS).toSeconds());
+        cookie.setPath("/");
+
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok(userDto);
     }
 
     @PostMapping("/signUp")
@@ -43,8 +68,16 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signOut")
-    public ResponseEntity<Void> signOut(@AuthenticationPrincipal UserDto user) {
+    public ResponseEntity<Void> signOut(HttpServletRequest request) {
         SecurityContextHolder.clearContext();
+
+        Optional<Cookie> authCookie = Stream.of(Optional.ofNullable(request.getCookies()).orElse(new Cookie[0]))
+                .filter(cookie -> CookieAuthenticationFilter.COOKIE_NAME
+                        .equals(cookie.getName()))
+                .findFirst();
+
+        authCookie.ifPresent(cookie -> cookie.setMaxAge(0));
+
         return ResponseEntity.noContent().build();
     }
 }

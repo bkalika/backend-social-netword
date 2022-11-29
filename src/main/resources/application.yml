@@ -1,1 +1,4 @@
 security.jwt.token.secret-key: my-secret-key
+auth:
+  cookie:
+    hmac-key:secret-key: my-secret
