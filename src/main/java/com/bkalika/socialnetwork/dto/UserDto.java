@@ -10,11 +10,15 @@ public class UserDto {
     String login;
     String token;
 
-    public UserDto(Long id, String firstName, String lastName, String login, String token) {
+    public UserDto(Long id, String firstName, String login) {
         this.id = id;
         this.firstName = firstName;
-        this.lastName = lastName;
         this.login = login;
+    }
+
+    public UserDto(Long id, String firstName, String lastName, String login, String token) {
+        this(id, firstName, login);
+        this.lastName = lastName;
         this.token = token;
     }
 

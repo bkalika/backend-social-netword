@@ -4,6 +4,7 @@ import com.bkalika.socialnetwork.dto.CredentialsDto;
 import com.bkalika.socialnetwork.dto.UserDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
@@ -78,5 +79,9 @@ public class AuthenticationService {
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             throw new RuntimeException();
         }
+    }
+
+    public UserDto findOrCreateByLogin(OAuth2User principal) {
+        return new UserDto(1L, principal.getAttribute("name"), principal.getAttribute("login"));
     }
 }
