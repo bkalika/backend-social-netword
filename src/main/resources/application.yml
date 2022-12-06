@@ -2,3 +2,17 @@ security.jwt.token.secret-key: my-secret-key
 auth:
   cookie:
     hmac-key:secret-key: my-secret
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            clientId: ${GITHUB_CLIENT_ID}
+            clientSecret: ${GITHUB_CLIENT_SECRET}
+  session:
+    store-type: redis
+  data:
+    redis:
+      host: localhost
+      port: 6379

@@ -1,6 +1,6 @@
 package com.bkalika.socialnetwork.controllers;
 
-import com.bkalika.socialnetwork.config.CookieAuthenticationFilter;
+import com.bkalika.socialnetwork.config.CookieAuthFilter;
 import com.bkalika.socialnetwork.config.UserAuthenticationProvider;
 import com.bkalika.socialnetwork.dto.SignUpDto;
 import com.bkalika.socialnetwork.dto.UserDto;
@@ -48,7 +48,7 @@ public class AuthenticationController {
                                           HttpServletResponse response) {
         userDto.setToken(userAuthenticationProvider.createToken(userDto.getLogin()));
 
-        Cookie cookie = new Cookie(CookieAuthenticationFilter.COOKIE_NAME,
+        Cookie cookie = new Cookie(CookieAuthFilter.COOKIE_NAME,
                 authenticationService.createToken(userDto));
 
         cookie.setHttpOnly(true);
@@ -72,7 +72,7 @@ public class AuthenticationController {
         SecurityContextHolder.clearContext();
 
         Optional<Cookie> authCookie = Stream.of(Optional.ofNullable(request.getCookies()).orElse(new Cookie[0]))
-                .filter(cookie -> CookieAuthenticationFilter.COOKIE_NAME
+                .filter(cookie -> CookieAuthFilter.COOKIE_NAME
                         .equals(cookie.getName()))
                 .findFirst();
 

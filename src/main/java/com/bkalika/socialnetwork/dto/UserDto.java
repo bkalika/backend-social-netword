@@ -1,9 +1,11 @@
 package com.bkalika.socialnetwork.dto;
 
+import java.io.Serializable;
+
 /**
  * @author @bkalika
  */
-public class UserDto {
+public class UserDto implements Serializable {
     Long id;
     String firstName;
     String lastName;

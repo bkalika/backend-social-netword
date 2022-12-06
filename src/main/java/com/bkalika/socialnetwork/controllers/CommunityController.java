@@ -2,8 +2,11 @@ package com.bkalika.socialnetwork.controllers;
 
 import com.bkalika.socialnetwork.dto.ImageDto;
 import com.bkalika.socialnetwork.dto.MessageDto;
+import com.bkalika.socialnetwork.dto.UserDto;
 import com.bkalika.socialnetwork.services.CommunityService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,9 +27,21 @@ public class CommunityController {
 
     @GetMapping("/messages")
     public ResponseEntity<List<MessageDto>> getCommunityMessages(
-            @RequestParam(value = "page", defaultValue = "0") int page
+            @AuthenticationPrincipal UserDto userDto,
+            @RequestParam(value = "nextPage", defaultValue = "false") boolean nextPage,
+            HttpSession session
     ) {
-        return ResponseEntity.ok(communityService.getCommunityMessages(page));
+        Integer currentPage = (Integer) session.getAttribute("currentPageMessages");
+        if(currentPage == null) {
+            currentPage = 0;
+        }
+
+        if(nextPage) {
+            currentPage++;
+        }
+        session.setAttribute("currentPageMessages", currentPage);
+
+        return ResponseEntity.ok(communityService.getCommunityMessages(userDto, currentPage));
     }
 
     @GetMapping("/images")

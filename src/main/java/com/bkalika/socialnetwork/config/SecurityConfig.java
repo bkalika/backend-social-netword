@@ -30,14 +30,14 @@ public class SecurityConfig {
                 .exceptionHandling().authenticationEntryPoint(userAuthenticationEntryPoint)
                 .and()
                 .addFilterBefore(new UsernamePasswordAuthFilter(userAuthenticationProvider), BasicAuthenticationFilter.class)
-                .addFilterBefore(new CookieAuthenticationFilter(), UsernamePasswordAuthFilter.class)
+                .addFilterBefore(new CookieAuthFilter(), UsernamePasswordAuthFilter.class)
                 .addFilterBefore(new JwtAuthFilter(userAuthenticationProvider), UsernamePasswordAuthFilter.class)
                 .csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                 .and()
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/v1/signIn", "/v1/signUp").permitAll()
-                        .anyRequest().permitAll());
+                        .anyRequest().authenticated());
 
         return http.build();
     }
