@@ -52,9 +52,12 @@ public class CommunityController {
     }
 
     @PostMapping("/messages")
-    public ResponseEntity<MessageDto> postMessage(@RequestBody MessageDto messageDto) {
+    public ResponseEntity<MessageDto> postMessage(
+            @AuthenticationPrincipal UserDto userDto,
+            @RequestBody MessageDto messageDto) {
+
         return ResponseEntity.created(URI.create("/v1/community/messages"))
-                .body(communityService.postMessage(messageDto));
+                .body(communityService.postMessage(userDto, messageDto));
     }
 
     @PostMapping("/images")

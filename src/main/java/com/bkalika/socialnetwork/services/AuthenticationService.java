@@ -2,6 +2,9 @@ package com.bkalika.socialnetwork.services;
 
 import com.bkalika.socialnetwork.dto.CredentialsDto;
 import com.bkalika.socialnetwork.dto.UserDto;
+import com.bkalika.socialnetwork.entities.User;
+import com.bkalika.socialnetwork.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,26 +17,39 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * @author @bkalika
  */
 @Service
 public class AuthenticationService {
+    private final UserRepository userRepository;
 
     @Value("${auth.cookie.hmac-key:secret-key}")
     private String secretKey;
 
     private final PasswordEncoder passwordEncoder;
 
-    public AuthenticationService(PasswordEncoder passwordEncoder) {
+    public AuthenticationService(PasswordEncoder passwordEncoder, UserRepository userRepository) {
         this.passwordEncoder = passwordEncoder;
+        this.userRepository = userRepository;
     }
 
+    @Transactional
     public UserDto authenticate(CredentialsDto credentialsDto) {
-        String encodeMasterPassword = passwordEncoder.encode(CharBuffer.wrap("the-password"));
-        if(passwordEncoder.matches(CharBuffer.wrap(credentialsDto.getPassword()), encodeMasterPassword)) {
-            return new UserDto(1L, "Bohdan", "Kalika", "login", "token");
+        User user = userRepository.findByLogin(credentialsDto.getLogin())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+//        String encodeMasterPassword = passwordEncoder.encode(CharBuffer.wrap("the-password"));
+        if(passwordEncoder.matches(CharBuffer.wrap(credentialsDto.getPassword()), user.getPassword())) {
+            user.setToken(UUID.randomUUID().toString());
+
+            return new UserDto(user.getId(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getLogin(),
+                    user.getToken()
+            );
         }
         throw new RuntimeException("Invalid password");
     }
@@ -50,17 +66,20 @@ public class AuthenticationService {
     }
 
     public UserDto findByToken(String token) {
+        User user = userRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Token not found"));
+
         String[] parts = token.split("&");
 
         Long userId =  Long.valueOf(parts[0]);
         String login = parts[1];
         String hmac = parts[2];
-        UserDto user = findByLogin(login);
-        if(!hmac.equals(calculateHmac(user)) || !userId.equals(user.getId())) {
+        UserDto userDto = findByLogin(login);
+        if(!hmac.equals(calculateHmac(userDto)) || !userId.equals(userDto.getId())) {
             throw new RuntimeException("Invalid Cookie value");
         }
 
-        return user;
+        return userDto;
     }
 
     private String calculateHmac(UserDto userDto) {

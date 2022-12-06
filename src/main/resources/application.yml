@@ -3,6 +3,20 @@ auth:
   cookie:
     hmac-key:secret-key: my-secret
 spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/socialnetwork
+    username: postgres
+    password: postgres
+  sql:
+    init:
+      platform: postgres
+      mode: always
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
   security:
     oauth2:
       client:
