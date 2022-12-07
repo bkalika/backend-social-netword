@@ -23,8 +23,8 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public ProfileDto getProfile(Long userId) {
-        User user = getUser(userId);
+    public ProfileDto getProfile(String userId) {
+        User user = getUser(Long.valueOf(userId));
         return new ProfileDto(
                 new UserSummaryDto(user.getId(), user.getFirstName(), user.getLastName()),
                 null,
@@ -33,9 +33,9 @@ public class UserService {
         );
     }
 
-    public void addFriend(UserDto userDto, Long friendId) {
+    public void addFriend(UserDto userDto, String friendId) {
         User user = getUser(userDto.getId());
-        User friend = getUser(friendId);
+        User friend = getUser(Long.valueOf(friendId));
         if(user.getFriends() == null)
             user.setFriends(new ArrayList<>());
         user.getFriends().add(friend);
