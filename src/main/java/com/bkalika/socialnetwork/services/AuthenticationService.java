@@ -3,8 +3,11 @@ package com.bkalika.socialnetwork.services;
 import com.bkalika.socialnetwork.dto.CredentialsDto;
 import com.bkalika.socialnetwork.dto.UserDto;
 import com.bkalika.socialnetwork.entities.User;
+import com.bkalika.socialnetwork.entities.UserStatus;
+import com.bkalika.socialnetwork.mappers.UserMapper;
 import com.bkalika.socialnetwork.repositories.UserRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,7 @@ import java.util.UUID;
 /**
  * @author @bkalika
  */
+@RequiredArgsConstructor
 @Service
 public class AuthenticationService {
     private final UserRepository userRepository;
@@ -31,10 +35,7 @@ public class AuthenticationService {
 
     private final PasswordEncoder passwordEncoder;
 
-    public AuthenticationService(PasswordEncoder passwordEncoder, UserRepository userRepository) {
-        this.passwordEncoder = passwordEncoder;
-        this.userRepository = userRepository;
-    }
+    private final UserMapper userMapper;
 
     @Transactional
     public UserDto authenticate(CredentialsDto credentialsDto) {
@@ -44,19 +45,15 @@ public class AuthenticationService {
         if(passwordEncoder.matches(CharBuffer.wrap(credentialsDto.getPassword()), user.getPassword())) {
             user.setToken(UUID.randomUUID().toString());
 
-            return new UserDto(user.getId(),
-                    user.getFirstName(),
-                    user.getLastName(),
-                    user.getLogin(),
-                    user.getToken()
-            );
+            return userMapper.toUserDto(user);
         }
         throw new RuntimeException("Invalid password");
     }
 
     public UserDto findByLogin(String login) {
         if("login".equals(login)) {
-            return new UserDto(1L, "Bohdan", "Kalika", "login", "token");
+            return new UserDto(1L, "Bohdan", "Kalika", "login", "token",
+                    UserStatus.CREATED, 25);
         }
         throw new RuntimeException("Invalid login");
     }

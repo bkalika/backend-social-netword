@@ -6,9 +6,10 @@ import com.bkalika.socialnetwork.dto.ImageDto;
 import com.bkalika.socialnetwork.dto.MessageDto;
 import com.bkalika.socialnetwork.dto.UserDto;
 import com.bkalika.socialnetwork.entities.Message;
+import com.bkalika.socialnetwork.mappers.MessageMapper;
 import com.bkalika.socialnetwork.repositories.MessageRepository;
 import com.bkalika.socialnetwork.repositories.UserRepository;
-import org.springframework.data.domain.Page;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,17 +20,13 @@ import java.util.stream.Collectors;
 /**
  * @author @bkalika
  */
+@RequiredArgsConstructor
 @Service
 public class CommunityService {
     private static final int PAGE_SIZE = 10;
-
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
-
-    public CommunityService(MessageRepository messageRepository, UserRepository userRepository) {
-        this.messageRepository = messageRepository;
-        this.userRepository = userRepository;
-    }
+    private final MessageMapper messageMapper;
 
     public List<MessageDto> getCommunityMessages(UserDto userDto, int page) {
         User user = getUser(userDto);
@@ -38,12 +35,11 @@ public class CommunityService {
                 .map(friends -> friends.stream().map(User::getId).collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
 
+        friendIds.add(user.getId());
+
         List<Message> messages = messageRepository.findCommunityMessages(friendIds, PageRequest.of(page, PAGE_SIZE));
 
-        List<MessageDto> messageDtos = new ArrayList<>();
-        messages.forEach(message -> messageDtos.add(new MessageDto(message.getId(), message.getContent())));
-
-        return messageDtos;
+        return messageMapper.messagesToMessageDtos(messages);
     }
 
     public List<ImageDto> getCommunityImages(int page) {
@@ -54,7 +50,7 @@ public class CommunityService {
     public MessageDto postMessage(UserDto userDto, MessageDto messageDto) {
         User user = getUser(userDto);
 
-        Message message = new Message();
+        Message message = messageMapper.messageDtoToMessage(messageDto);
         message.setContent(messageDto.getContent());
         message.setUser(user);
 
@@ -63,7 +59,8 @@ public class CommunityService {
         user.getMessages().add(message);
 
         Message savedMessage = messageRepository.save(message);
-        return new MessageDto(savedMessage.getId(), savedMessage.getContent());
+
+        return messageMapper.messageToMessageDto(savedMessage);
     }
 
     public ImageDto postImage(MultipartFile file, String title) {

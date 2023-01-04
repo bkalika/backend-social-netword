@@ -3,6 +3,7 @@ package com.bkalika.socialnetwork.entities;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -11,12 +12,12 @@ import java.util.List;
  */
 @Document(collation = "app_user")
 public class MongoUser {
-
     private String id;
     private String firstName;
     private String lastName;
     private String login;
     private String password;
+    private LocalDate birthDate;
     private List<MongoUser> friends;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime createdDate;
@@ -31,12 +32,13 @@ public class MongoUser {
         this.lastName = lastName;
     }
 
-    public MongoUser(String id, String firstName, String lastName, String login, String password, List<MongoUser> friends, LocalDateTime createdDate) {
+    public MongoUser(String id, String firstName, String lastName, String login, String password, LocalDate birthDate, List<MongoUser> friends, LocalDateTime createdDate) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.login = login;
         this.password = password;
+        this.birthDate = birthDate;
         this.friends = friends;
         this.createdDate = createdDate;
     }
@@ -83,6 +85,14 @@ public class MongoUser {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public LocalDate getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
     }
 
     public List<MongoUser> getFriends() {

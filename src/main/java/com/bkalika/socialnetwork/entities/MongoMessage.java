@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
  */
 @Document(collation = "app_messages")
 public class MongoMessage {
-
     private String id;
     private String content;
     private MongoUser user;

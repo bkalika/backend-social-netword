@@ -2,35 +2,28 @@ package com.bkalika.socialnetwork.services;
 
 import com.bkalika.socialnetwork.dto.*;
 import com.bkalika.socialnetwork.entities.User;
+import com.bkalika.socialnetwork.mappers.UserMapper;
 import com.bkalika.socialnetwork.repositories.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.nio.CharBuffer;
-import java.time.LocalDateTime;
 import java.util.*;
 
 /**
  * @author @bkalika
  */
+@RequiredArgsConstructor
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    private final UserMapper userMapper;
 
     public ProfileDto getProfile(String userId) {
         User user = getUser(Long.valueOf(userId));
-        return new ProfileDto(
-                new UserSummaryDto(user.getId(), user.getFirstName(), user.getLastName()),
-                null,
-                null,
-                null
-        );
+        return userMapper.userToProfileDto(user);
     }
 
     public void addFriend(UserDto userDto, String friendId) {
@@ -59,24 +52,13 @@ public class UserService {
             throw new RuntimeException("Login already exists");
         }
 
-        User user = new User(null,
-                userDto.getFirstName(),
-                userDto.getLastName(),
-                userDto.getLogin(),
-                passwordEncoder.encode(CharBuffer.wrap(userDto.getPassword())),
-                UUID.randomUUID().toString(),
-                null,
-                null,
-                LocalDateTime.now()
-        );
+        User user = userMapper.signUpToUser(userDto);
+        user.setPassword(passwordEncoder.encode(CharBuffer.wrap(userDto.getPassword())));
+        user.setToken(UUID.randomUUID().toString());
 
         User savedUser = userRepository.save(user);
 
-        return new UserDto(savedUser.getId(),
-                savedUser.getFirstName(),
-                savedUser.getLastName(),
-                savedUser.getLogin(),
-                savedUser.getToken());
+        return userMapper.toUserDto(savedUser);
     }
 
     public void signOut(UserDto userDto) {
@@ -88,6 +70,7 @@ public class UserService {
     }
 
     private User getUser(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found!"));
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
     }
 }

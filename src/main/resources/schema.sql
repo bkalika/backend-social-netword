@@ -5,8 +5,11 @@ create table if not exists social_network_user (
     login varchar(100),
     password varchar(100),
     token varchar(100),
+    birth_date date,
     created_date timestamp
 );
+-- alter table social_network_user add birth_date date;
+
 create sequence if not exists social_network_user_sequence start 1000 increment 1;
 
 create table if not exists message (

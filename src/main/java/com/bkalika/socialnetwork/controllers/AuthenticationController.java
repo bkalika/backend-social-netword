@@ -9,6 +9,7 @@ import com.bkalika.socialnetwork.services.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,21 +28,13 @@ import java.util.stream.Stream;
 /**
  * @author @bkalika
  */
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/v1")
 public class AuthenticationController {
-
     private final UserService userService;
     private final UserAuthenticationProvider userAuthenticationProvider;
     private final AuthenticationService authenticationService;
-
-    public AuthenticationController(UserService userService,
-                                    UserAuthenticationProvider userAuthenticationProvider,
-                                    AuthenticationService authenticationService) {
-        this.userService = userService;
-        this.userAuthenticationProvider = userAuthenticationProvider;
-        this.authenticationService = authenticationService;
-    }
 
     @PostMapping("/signIn")
     public ResponseEntity<UserDto> signIn(@AuthenticationPrincipal UserDto userDto,

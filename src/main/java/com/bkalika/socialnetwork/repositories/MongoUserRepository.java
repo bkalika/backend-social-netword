@@ -11,7 +11,6 @@ import java.util.Optional;
  * @author @bkalika
  */
 public interface MongoUserRepository extends PagingAndSortingRepository<MongoUser, String> {
-
     Optional<MongoUser> findByLogin(String login);
     @Query("{$or: [{firstName: /?0/}, {lastName: /?0/}, {login: /?0/}]}")
     List<MongoUser> searchUsers(String term);

@@ -5,6 +5,7 @@ import com.bkalika.socialnetwork.dto.MessageDto;
 import com.bkalika.socialnetwork.dto.UserDto;
 import com.bkalika.socialnetwork.services.CommunityService;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -16,14 +17,11 @@ import java.util.List;
 /**
  * @author @bkalika
  */
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/v1/community")
 public class CommunityController {
     private final CommunityService communityService;
-
-    public CommunityController(CommunityService communityService) {
-        this.communityService = communityService;
-    }
 
     @GetMapping("/messages")
     public ResponseEntity<List<MessageDto>> getCommunityMessages(
